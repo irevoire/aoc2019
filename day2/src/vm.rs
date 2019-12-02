@@ -13,6 +13,10 @@ impl Vm {
         Vm { pos: 0, mem }
     }
 
+    pub fn from(mem: crate::tape::Tape) -> Self {
+        Vm { pos: 0, mem }
+    }
+
     pub fn finished(&self) -> bool {
         self.mem[self.pos] == 99
     }
@@ -38,7 +42,12 @@ impl Vm {
         let pos_b = self.mem[self.pos + 2];
         let b = self.mem[pos_b];
         let pos_res = self.mem[self.pos + 3];
-        self.mem[pos_res] = a + b;
+
+        if let Some(res) = a.checked_add(b) {
+            self.mem[pos_res] = res;
+        } else {
+            self.mem[self.pos + 4] = 99;
+        }
     }
 
     fn mul(&mut self) {
@@ -47,6 +56,11 @@ impl Vm {
         let pos_b = self.mem[self.pos + 2];
         let b = self.mem[pos_b];
         let pos_res = self.mem[self.pos + 3];
-        self.mem[pos_res] = a * b;
+
+        if let Some(res) = a.checked_mul(b) {
+            self.mem[pos_res] = res;
+        } else {
+            self.mem[self.pos + 4] = 99;
+        }
     }
 }

@@ -3,7 +3,7 @@
 
 use std::ops::{Index, IndexMut};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Tape {
     vec: Vec<i32>,
 }

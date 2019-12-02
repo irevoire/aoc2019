@@ -1,6 +1,7 @@
-mod tape;
+pub mod tape;
 pub mod vm;
 
+pub use tape::Tape;
 pub use vm::Vm;
 
 use std::io;
