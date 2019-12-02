@@ -4,11 +4,11 @@ pub struct Vm {
 }
 
 impl Vm {
-    pub fn new() -> Self {
+    pub fn new(a: i32, b: i32) -> Self {
         let mut mem = crate::parse();
         // restore gravity assist program
-        mem[1] = 12;
-        mem[2] = 2;
+        mem[1] = a;
+        mem[2] = b;
 
         Vm { pos: 0, mem }
     }
