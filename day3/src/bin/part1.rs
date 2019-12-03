@@ -12,5 +12,5 @@ fn main() {
         .collect();
     let intersections = intersection(&paths[0].convert(), &paths[1].convert());
     let min = intersections.iter().map(|c| c.x.abs() + c.y.abs()).min();
-    println!("Closest intersection is at: {}", min.unwrap());
+    println!("Nearest intersection is at: {}", min.unwrap());
 }
