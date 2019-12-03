@@ -8,11 +8,11 @@ struct State {
 }
 
 fn main() {
-    let mut html = String::new();
-    let stdin = io::stdin();
-    let mut handle = stdin.lock();
+    let mut args = std::env::args();
+    args.next(); // name of the binary
+    let url = args.next().expect("give me an url as argument");
 
-    handle.read_to_string(&mut html).unwrap();
+    let html = reqwest::get(&url).unwrap().text().unwrap();
 
     let fragment = Html::parse_fragment(&html);
     let selector = Selector::parse(".day-desc").unwrap();
