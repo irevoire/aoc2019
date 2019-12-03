@@ -16,15 +16,6 @@ impl Direction {
         }
     }
 
-    pub fn dec(&self) -> Direction {
-        match self {
-            Direction::Left(n) => Direction::Left(n - 1),
-            Direction::Up(n) => Direction::Up(n - 1),
-            Direction::Down(n) => Direction::Down(n - 1),
-            Direction::Right(n) => Direction::Right(n - 1),
-        }
-    }
-
     pub fn one(&self) -> Direction {
         match self {
             Direction::Left(_) => Direction::Left(1),
@@ -84,16 +75,6 @@ impl std::str::FromStr for Path {
 pub struct Coord {
     pub x: i32,
     pub y: i32,
-}
-
-impl Coord {
-    pub fn new() -> Self {
-        Coord { x: 0, y: 0 }
-    }
-
-    pub fn start(&self) -> bool {
-        self.x == self.y && self.x == 0
-    }
 }
 
 /// we are defining addition between a coordinate and a direction
