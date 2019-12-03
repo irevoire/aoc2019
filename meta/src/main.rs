@@ -1,6 +1,5 @@
 use ego_tree::iter::Edge::*;
 use scraper::{Html, Node, Selector};
-use std::io::{self, Read};
 
 struct State {
     code: bool,
@@ -34,7 +33,6 @@ fn main() {
         match element {
             Open(el) => handle_open(&mut state, el.value()),
             Close(el) => handle_close(&mut state, el.value()),
-            _ => panic!("unexpected thing"),
         }
     }
 }
@@ -75,7 +73,7 @@ fn handle_open(state: &mut State, node: &Node) {
 fn handle_close(state: &mut State, node: &Node) {
     let el = match node {
         Node::Element(el) => el,
-        Node::Text(t) => return,
+        Node::Text(_) => return,
         n => panic!("Unknown close node: {:?}", n),
     };
     // this will work only for well formed documents
