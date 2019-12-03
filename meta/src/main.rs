@@ -7,8 +7,7 @@ struct State {
 }
 
 fn main() {
-    let mut args = std::env::args();
-    args.next(); // name of the binary
+    let mut args = std::env::args().skip(1); // Skiping the name of the binary
     let url = args.next().expect("give me an url as argument");
 
     let html = reqwest::get(&url).unwrap().text().unwrap();
