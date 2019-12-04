@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 fn split(mut n: u32) -> Vec<u8> {
     let mut res = Vec::new();
     while n > 0 {
@@ -40,12 +42,10 @@ fn main() {
     let range: Vec<u32> = range.split('-').map(|e| e.parse().unwrap()).collect();
     let (start, end) = (range[0], range[1]);
 
-    let mut count = 0;
-    for i in start..=end {
-        if valid(i) {
-            count += 1;
-        }
-    }
+    let count: u32 = (start..=end)
+        .into_par_iter()
+        .map(|i| if valid(i) { 1 } else { 0 })
+        .sum();
 
     println!("{}", count);
 }
