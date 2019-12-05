@@ -10,6 +10,4 @@ fn main() {
     while !vm.finished() {
         vm.cycle();
     }
-
-    println!("tape: {:?}", vm.result());
 }
