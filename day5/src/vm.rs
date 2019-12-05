@@ -82,10 +82,18 @@ impl Vm {
     pub fn cycle(&mut self) {
         let op = self.mem[self.pos] % 100;
         match op {
+            // operation
             1 => self.add(),
             2 => self.mul(),
+            // io
             3 => self.input(),
             4 => self.output(),
+            // jump
+            5 => self.if_true(),
+            6 => self.if_false(),
+            // condition
+            7 => self.less_than(),
+            8 => self.equals(),
             99 => return,
             op => panic!("Unknown opcode: {}", op),
         }
@@ -145,5 +153,59 @@ impl Vm {
         println!("{}", *c);
 
         self.pos += 2;
+    }
+
+    fn if_true(&mut self) {
+        let (_, b, c, _) = self.opcode();
+        let c = self.get(self.pos + 1, c);
+        let b = self.get(self.pos + 2, b);
+
+        if c != 0 {
+            self.pos = b;
+        } else {
+            self.pos += 3;
+        }
+    }
+
+    fn if_false(&mut self) {
+        let (_, b, c, _) = self.opcode();
+        let c = self.get(self.pos + 1, c);
+        let b = self.get(self.pos + 2, b);
+
+        if c == 0 {
+            self.pos = b;
+        } else {
+            self.pos += 3;
+        }
+    }
+
+    fn less_than(&mut self) {
+        let (a, b, c, _) = self.opcode();
+        let c = self.get(self.pos + 1, c);
+        let b = self.get(self.pos + 2, b);
+        let a = self.get_mut(self.pos + 3, a);
+
+        if c < b {
+            *a = 1;
+        } else {
+            *a = 0;
+        }
+
+        self.pos += 4;
+    }
+
+    fn equals(&mut self) {
+        let (a, b, c, _) = self.opcode();
+        let c = self.get(self.pos + 1, c);
+        let b = self.get(self.pos + 2, b);
+        let a = self.get_mut(self.pos + 3, a);
+
+        if c == b {
+            *a = 1;
+        } else {
+            *a = 0;
+        }
+
+        self.pos += 4;
     }
 }
