@@ -8,19 +8,21 @@ pub enum Mode {
 
 pub use Mode::*;
 
-pub struct Vm<R> {
+pub struct Vm<R, W> {
     pos: i32,
     mem: crate::tape::Tape,
     reader: Box<io::BufReader<R>>,
+    writer: W,
 }
 
-impl<R: io::Read> Vm<R> {
-    pub fn from(mem: crate::tape::Tape, reader: R) -> Self {
+impl<R: io::Read, W: io::Write> Vm<R, W> {
+    pub fn from(mem: crate::tape::Tape, reader: R, writer: W) -> Self {
         let reader = Box::new(io::BufReader::new(reader));
         Vm {
             pos: 0,
             mem,
             reader,
+            writer,
         }
     }
 
@@ -129,7 +131,9 @@ impl<R: io::Read> Vm<R> {
     }
 
     fn input(&mut self) {
-        println!("Waiting for an input: ");
+        write!(self.writer, "Waiting for an input: ")
+            .expect("Writer was closed while the VM was running");
+        self.writer.flush().unwrap();
 
         let mut line = String::new();
         self.reader
@@ -147,9 +151,10 @@ impl<R: io::Read> Vm<R> {
 
     fn output(&mut self) {
         let (_, _, c, _) = self.opcode();
-        let c = self.get_mut(self.pos + 1, c);
+        let c = self.get(self.pos + 1, c);
 
-        println!("{}", *c);
+        write!(self.writer, "{}\n", c).expect("Writer was closed while the VM was running");
+        self.writer.flush().unwrap();
 
         self.pos += 2;
     }
