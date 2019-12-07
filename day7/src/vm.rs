@@ -8,15 +8,17 @@ pub enum Mode {
 
 pub use Mode::*;
 
-pub struct Vm<R, W> {
+pub struct Vm<'w, R, W> {
     pos: i32,
     mem: crate::tape::Tape,
     reader: Box<io::BufReader<R>>,
-    writer: W,
+    writer: &'w mut W,
 }
 
-impl<R: io::Read, W: io::Write> Vm<R, W> {
-    pub fn from(mem: crate::tape::Tape, reader: R, writer: W) -> Self {
+impl<'w, R: io::Read, W: io::Write> Vm<'w, R, W> {
+    /// create a VM from a memory tape you should provide,
+    /// a Reader and a Writer
+    pub fn from(mem: crate::tape::Tape, reader: R, writer: &'w mut W) -> Self {
         let reader = Box::new(io::BufReader::new(reader));
         Vm {
             pos: 0,
@@ -26,12 +28,9 @@ impl<R: io::Read, W: io::Write> Vm<R, W> {
         }
     }
 
+    /// return true if the execution of the VM is finished
     pub fn finished(&self) -> bool {
         self.mem[self.pos] == 99
-    }
-
-    pub fn result(&self) -> i32 {
-        self.mem[0]
     }
 
     fn opcode(&self) -> (Mode, Mode, Mode, u8) {
@@ -131,10 +130,6 @@ impl<R: io::Read, W: io::Write> Vm<R, W> {
     }
 
     fn input(&mut self) {
-        write!(self.writer, "Waiting for an input: ")
-            .expect("Writer was closed while the VM was running");
-        self.writer.flush().unwrap();
-
         let mut line = String::new();
         self.reader
             .read_line(&mut line)
