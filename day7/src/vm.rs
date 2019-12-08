@@ -1,5 +1,4 @@
-use std::io;
-use std::io::BufRead;
+use std::sync::mpsc::{Receiver, Sender};
 
 pub enum Mode {
     Position,
@@ -8,18 +7,17 @@ pub enum Mode {
 
 pub use Mode::*;
 
-pub struct Vm<'w, R, W> {
+pub struct Vm {
     pos: i32,
     mem: crate::tape::Tape,
-    reader: Box<io::BufReader<R>>,
-    writer: &'w mut W,
+    reader: Receiver<i32>,
+    writer: Sender<i32>,
 }
 
-impl<'w, R: io::Read, W: io::Write> Vm<'w, R, W> {
+impl Vm {
     /// create a VM from a memory tape you should provide,
     /// a Reader and a Writer
-    pub fn from(mem: crate::tape::Tape, reader: R, writer: &'w mut W) -> Self {
-        let reader = Box::new(io::BufReader::new(reader));
+    pub fn from(mem: crate::tape::Tape, reader: Receiver<i32>, writer: Sender<i32>) -> Self {
         Vm {
             pos: 0,
             mem,
@@ -130,11 +128,7 @@ impl<'w, R: io::Read, W: io::Write> Vm<'w, R, W> {
     }
 
     fn input(&mut self) {
-        let mut line = String::new();
-        self.reader
-            .read_line(&mut line)
-            .expect("Can't read on stdin");
-        let input = line.trim().parse().expect("You must only provide integer");
+        let input = self.reader.recv().expect("Can't read input");
 
         let (_, _, c, _) = self.opcode();
         let c = self.get_mut(self.pos + 1, c);
@@ -148,8 +142,9 @@ impl<'w, R: io::Read, W: io::Write> Vm<'w, R, W> {
         let (_, _, c, _) = self.opcode();
         let c = self.get(self.pos + 1, c);
 
-        write!(self.writer, "{}\n", c).expect("Writer was closed while the VM was running");
-        self.writer.flush().unwrap();
+        self.writer
+            .send(c)
+            .expect("writer was closed before the end of the execution");
 
         self.pos += 2;
     }
