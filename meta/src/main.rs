@@ -1,5 +1,7 @@
 use ego_tree::iter::Edge::*;
 use scraper::{Html, Node, Selector};
+use std::fs::File;
+use std::io::{self, prelude::*};
 
 struct State {
     code: bool,
@@ -7,10 +9,24 @@ struct State {
 }
 
 fn main() {
-    let mut args = std::env::args().skip(1); // Skiping the name of the binary
-    let url = args.next().expect("give me an url as argument");
+    let filename = std::env::args()
+        .skip(1) // Skiping the name of the binary
+        .next();
 
-    let html = reqwest::get(&url).unwrap().text().unwrap();
+    let mut html = String::new();
+    match filename {
+        Some(filename) => {
+            let mut file = File::open(filename).expect("Can’t open file");
+            file.read_to_string(&mut html)
+                .expect("Can’t read in the file");
+        }
+        None => {
+            io::stdin()
+                .read_to_string(&mut html)
+                .expect("Can’t read in stdin");
+            ()
+        }
+    }
 
     let fragment = Html::parse_fragment(&html);
     let selector = Selector::parse(".day-desc").unwrap();
