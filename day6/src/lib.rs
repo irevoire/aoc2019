@@ -106,4 +106,49 @@ impl Tree {
             (None, None) => Nothing,
         }
     }
+
+    pub fn graph(&self, nodes: &mut Vec<Vec<String>>) -> u32 {
+        let base = self.tree.iter().position(|n| n.name == "COM").unwrap();
+        match self._graph(base, nodes) {
+            Finished(u) => u,
+            You(u) => panic!("you {}", u),
+            San(s) => panic!("san {}", s),
+            Nothing => panic!("Nothing was found"),
+        }
+    }
+
+    fn _graph(&self, idx: usize, nodes: &mut Vec<Vec<String>>) -> DistanceState {
+        let n = &self.tree[idx];
+        if n.name == "SAN" {
+            nodes.push(vec![String::from("SAN")]);
+            return San(0);
+        } else if n.name == "YOU" {
+            nodes.push(vec![String::from("YOU")]);
+            return You(0);
+        }
+        let mut you = None;
+        let mut san = None;
+        for i in n.relation.iter() {
+            match self._graph(*i, nodes) {
+                Finished(u) => return Finished(u),
+                You(u) => {
+                    nodes.last_mut().unwrap().push(n.name.clone());
+                    nodes.push(vec![n.name.clone()]);
+                    you = Some(u);
+                }
+                San(u) => {
+                    nodes.last_mut().unwrap().push(n.name.clone());
+                    nodes.push(vec![n.name.clone()]);
+                    san = Some(u);
+                }
+                Nothing => (),
+            }
+        }
+        match (you, san) {
+            (Some(y), Some(s)) => Finished(y + s),
+            (Some(y), None) => You(y + 1),
+            (None, Some(s)) => San(s + 1),
+            (None, None) => Nothing,
+        }
+    }
 }
