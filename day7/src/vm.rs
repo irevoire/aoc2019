@@ -12,6 +12,7 @@ pub struct Vm {
     mem: crate::tape::Tape,
     reader: Receiver<i32>,
     writer: Sender<i32>,
+    last_output: i32,
 }
 
 impl Vm {
@@ -23,7 +24,12 @@ impl Vm {
             mem,
             reader,
             writer,
+            last_output: 0,
         }
+    }
+
+    pub fn result(&self) -> i32 {
+        self.last_output
     }
 
     /// return true if the execution of the VM is finished
@@ -142,9 +148,11 @@ impl Vm {
         let (_, _, c, _) = self.opcode();
         let c = self.get(self.pos + 1, c);
 
+        self.last_output = c;
         self.writer
             .send(c)
-            .expect("writer was closed before the end of the execution");
+            // if a channel was closed finish all threads
+            .unwrap_or_else(|_| self.mem[self.pos + 2] = 99);
 
         self.pos += 2;
     }
