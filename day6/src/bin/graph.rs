@@ -11,11 +11,16 @@ fn main() {
     let reader = BufReader::new(file);
 
     println!("digraph G {{");
+    println!("\trankdir=\"LR\"");
     reader.lines().for_each(|l| {
         let l = l.unwrap();
         let r: Vec<&str> = l.split(')').collect();
         // we need to add a letter to the start of the node
         println!("\tg{} -> g{};", r[0], r[1]);
     });
+    println!("\t\"gCOM\" [style=filled, fillcolor=blue]");
+    println!("\t\"gYOU\" [style=filled, fillcolor=green]");
+    println!("\t\"gSAN\" [style=filled, fillcolor=red]");
+
     println!("}}");
 }
