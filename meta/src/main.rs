@@ -29,25 +29,19 @@ fn main() {
     }
 
     let fragment = Html::parse_fragment(&html);
-    let selector = Selector::parse(".day-desc").unwrap();
+    let selector = Selector::parse("article").unwrap();
 
-    let article = match fragment.select(&selector).next() {
-        Some(el) => el,
-        None => {
-            println!("Error in the page");
-            return;
-        }
-    };
+    for article in fragment.select(&selector) {
+        let mut state = State {
+            code: false,
+            small_code: false,
+        };
 
-    let mut state = State {
-        code: false,
-        small_code: false,
-    };
-
-    for element in article.traverse() {
-        match element {
-            Open(el) => handle_open(&mut state, el.value()),
-            Close(el) => handle_close(&mut state, el.value()),
+        for element in article.traverse() {
+            match element {
+                Open(el) => handle_open(&mut state, el.value()),
+                Close(el) => handle_close(&mut state, el.value()),
+            }
         }
     }
 }
