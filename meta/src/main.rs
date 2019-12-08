@@ -50,7 +50,13 @@ fn handle_open(state: &mut State, node: &Node) {
     let el = match node {
         Node::Element(el) => el,
         Node::Text(t) => {
-            print!("{}", t.text.trim());
+            if state.code {
+                print!("{}", t.text.trim());
+            } else if state.small_code {
+                print!("{}", t.text.trim_end());
+            } else if t.text.trim() != "" {
+                print!("{}", t.text);
+            }
             return;
         }
         n => panic!("Unknown open node: {:?}", n),
@@ -61,12 +67,12 @@ fn handle_open(state: &mut State, node: &Node) {
     match el.name() {
         "article" => (),
         "h2" => print!("## "),
-        "p" => print!("\n"),
+        "p" => (),
         "a" => print!(" ["),
         "span" => print!(" *"),
         "em" => print!(" **"),
         "code" => {
-            print!(" `");
+            print!("`");
             state.small_code = true;
         }
         "pre" => {
@@ -93,7 +99,7 @@ fn handle_close(state: &mut State, node: &Node) {
                 state.code = false;
             }
             "code" if state.code == false => {
-                print!("` ");
+                print!("`");
                 state.small_code = false;
             }
             _ => (),
@@ -102,11 +108,11 @@ fn handle_close(state: &mut State, node: &Node) {
         match el.name() {
             "article" => (),
             "h2" => print!("\n"),
-            "p" => print!("\n"),
+            "p" => print!("\n\n"),
             "a" => print!("]({}) ", el.attr("href").unwrap_or("invalid link")),
             "span" => print!("* "),
             "em" => print!("** "),
-            "code" => print!("` "),
+            "code" => print!("`"),
             "ul" => print!("\n"),
             "li" => print!("\n"),
             el => panic!("Unknown close element: {:?}", el),
