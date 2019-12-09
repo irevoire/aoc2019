@@ -5,7 +5,7 @@ use std::ops::{Index, IndexMut};
 
 #[derive(Debug, Clone)]
 pub struct Tape {
-    vec: Vec<i32>,
+    vec: Vec<i64>,
 }
 
 impl Tape {
@@ -16,8 +16,8 @@ impl Tape {
 }
 
 /// Generate a new Tape from a vector with no negative values
-impl std::iter::FromIterator<i32> for Tape {
-    fn from_iter<I: IntoIterator<Item = i32>>(iter: I) -> Self {
+impl std::iter::FromIterator<i64> for Tape {
+    fn from_iter<I: IntoIterator<Item = i64>>(iter: I) -> Self {
         let mut t = Self::new();
         let mut idx = 0;
 
@@ -42,9 +42,9 @@ impl std::iter::FromIterator<i32> for Tape {
 ///   '---+----+---+----+---+----+---+----'
 ///     0   1    2   3    4   5    6   7    indexes in the internal vector
 ///
-impl Index<i32> for Tape {
-    type Output = i32;
-    fn index(&self, mut i: i32) -> &Self::Output {
+impl Index<i64> for Tape {
+    type Output = i64;
+    fn index(&self, mut i: i64) -> &Self::Output {
         if i >= 0 {
             i = i * 2;
         } else {
@@ -62,8 +62,8 @@ impl Index<i32> for Tape {
     }
 }
 
-impl IndexMut<i32> for Tape {
-    fn index_mut<'a>(&'a mut self, mut i: i32) -> &'a mut Self::Output {
+impl IndexMut<i64> for Tape {
+    fn index_mut<'a>(&'a mut self, mut i: i64) -> &'a mut Self::Output {
         if i >= 0 {
             i = i * 2;
         } else {

@@ -3,23 +3,26 @@ use std::sync::mpsc::{Receiver, Sender};
 pub enum Mode {
     Position,
     Immediate,
+    Relative,
 }
 
 pub use Mode::*;
 
 pub struct Vm {
-    pos: i32,
+    pos: i64,
+    relative_base: i64,
     mem: crate::tape::Tape,
-    reader: Receiver<i32>,
-    writer: Sender<i32>,
+    reader: Receiver<i64>,
+    writer: Sender<i64>,
 }
 
 impl Vm {
     /// create a VM from a memory tape you should provide,
     /// a Reader and a Writer
-    pub fn from(mem: crate::tape::Tape, reader: Receiver<i32>, writer: Sender<i32>) -> Self {
+    pub fn from(mem: crate::tape::Tape, reader: Receiver<i64>, writer: Sender<i64>) -> Self {
         Vm {
             pos: 0,
+            relative_base: 0,
             mem,
             reader,
             writer,
@@ -40,6 +43,7 @@ impl Vm {
         let c = match opcode % 10 {
             0 => Position,
             1 => Immediate,
+            2 => Relative,
             mode => panic!("Unknown mode: {}", mode),
         };
         opcode /= 10;
@@ -47,6 +51,7 @@ impl Vm {
         let b = match opcode % 10 {
             0 => Position,
             1 => Immediate,
+            2 => Relative,
             mode => panic!("Unknown mode: {}", mode),
         };
         opcode /= 10;
@@ -54,26 +59,36 @@ impl Vm {
         let a = match opcode % 10 {
             0 => Position,
             1 => Immediate,
+            2 => Relative,
             mode => panic!("Unknown mode: {}", mode),
         };
 
         (a, b, c, op)
     }
 
-    fn get(&self, pos: i32, mode: Mode) -> i32 {
+    fn get(&self, pos: i64, mode: Mode) -> i64 {
         match mode {
             Position => self.mem[self.mem[pos]],
             Immediate => self.mem[pos],
+            Relative => {
+                let pos = self.mem[pos];
+                self.mem[self.relative_base + pos]
+            }
         }
     }
 
-    fn get_mut(&mut self, pos: i32, mode: Mode) -> &mut i32 {
+    fn get_mut(&mut self, pos: i64, mode: Mode) -> &mut i64 {
         match mode {
             Position => {
                 let pos = self.mem[pos];
                 &mut self.mem[pos]
             }
             Immediate => &mut self.mem[pos],
+            Relative => {
+                let base = self.relative_base;
+                let pos = self.mem[pos];
+                &mut self.mem[base + pos]
+            }
         }
     }
 
@@ -92,6 +107,8 @@ impl Vm {
             // condition
             7 => self.less_than(),
             8 => self.equals(),
+            // relative base
+            9 => self.relative_base(),
             99 => return,
             op => panic!("Unknown opcode: {}", op),
         }
@@ -105,11 +122,11 @@ impl Vm {
 
         if let Some(res) = c.checked_add(b) {
             *a = res;
+            self.pos += 4;
         } else {
-            *a = 99;
+            println!("an overflow was encountered");
+            self.mem[self.pos] = 99;
         }
-
-        self.pos += 4;
     }
 
     fn mul(&mut self) {
@@ -120,11 +137,11 @@ impl Vm {
 
         if let Some(res) = c.checked_mul(b) {
             *a = res;
+            self.pos += 4;
         } else {
-            *a = 99;
+            println!("an overflow was encountered");
+            self.mem[self.pos] = 99;
         }
-
-        self.pos += 4;
     }
 
     fn input(&mut self) {
@@ -202,5 +219,14 @@ impl Vm {
         }
 
         self.pos += 4;
+    }
+
+    fn relative_base(&mut self) {
+        let (_, _, c, _) = self.opcode();
+        let c = self.get(self.pos + 1, c);
+
+        self.relative_base += c;
+
+        self.pos += 2;
     }
 }

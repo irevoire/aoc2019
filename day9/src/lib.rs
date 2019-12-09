@@ -16,7 +16,7 @@ pub fn parse(file: &str) -> tape::Tape {
         .flat_map(|l| {
             l.unwrap()
                 .split(',')
-                .map(|el| el.parse::<i32>().unwrap())
+                .map(|el| el.parse::<i64>().unwrap())
                 .collect::<Vec<_>>()
         })
         .collect()
