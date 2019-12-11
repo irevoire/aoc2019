@@ -33,7 +33,7 @@ pub struct Bot {
     finished: bool,
     direction: Direction,
     position: Coord,
-    map: grid::Grid,
+    pub map: grid::Grid,
     reader: Receiver<i64>,
     writer: Sender<i64>,
 }
