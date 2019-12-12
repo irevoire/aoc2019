@@ -1,3 +1,4 @@
+#[derive(PartialEq, Clone)]
 pub struct Coord {
     pub x: i32,
     pub y: i32,
@@ -31,6 +32,7 @@ impl Coord {
     }
 }
 
+#[derive(PartialEq, Clone)]
 pub struct Moon {
     position: Coord,
     velocity: Coord,
@@ -70,9 +72,35 @@ impl Moon {
         self.velocity.z -= (self.position.z > moon.position.z) as i32;
     }
 
+    pub fn update_x_velocity(&mut self, moon: &Self) {
+        self.velocity.x += (self.position.x < moon.position.x) as i32;
+        self.velocity.x -= (self.position.x > moon.position.x) as i32;
+    }
+    pub fn update_y_velocity(&mut self, moon: &Self) {
+        self.velocity.y += (self.position.y < moon.position.y) as i32;
+        self.velocity.y -= (self.position.y > moon.position.y) as i32;
+    }
+
+    pub fn update_z_velocity(&mut self, moon: &Self) {
+        self.velocity.z += (self.position.z < moon.position.z) as i32;
+        self.velocity.z -= (self.position.z > moon.position.z) as i32;
+    }
+
     pub fn update_position(&mut self) {
         self.position.x += self.velocity.x;
         self.position.y += self.velocity.y;
+        self.position.z += self.velocity.z;
+    }
+
+    pub fn update_x_position(&mut self) {
+        self.position.x += self.velocity.x;
+    }
+
+    pub fn update_y_position(&mut self) {
+        self.position.y += self.velocity.y;
+    }
+
+    pub fn update_z_position(&mut self) {
         self.position.z += self.velocity.z;
     }
 
