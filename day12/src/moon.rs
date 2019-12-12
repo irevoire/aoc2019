@@ -34,7 +34,7 @@ impl Coord {
 
 #[derive(PartialEq, Clone)]
 pub struct Moon {
-    position: Coord,
+    pub position: Coord,
     velocity: Coord,
 }
 
