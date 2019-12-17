@@ -5,6 +5,7 @@ pub struct Reaction {
     pub relation: HashMap<String, (u64, Vec<(u64, String)>)>,
     pub remaining: HashMap<String, u64>,
     pub used: HashMap<String, u64>,
+    pub cost: HashMap<String, f64>,
 }
 
 impl Reaction {
@@ -35,35 +36,30 @@ impl Reaction {
         }
     }
 
-    pub fn try_generate(&mut self, nb: u64, el: String) {
-        let have = self.remaining.entry(el.clone()).or_insert(0);
-        if *have >= nb {
-            return;
+    pub fn cost(&mut self, s: &str) -> f64 {
+        // if the cost was already computed
+        if let Some(cost) = self.cost.get(s.clone()) {
+            return *cost;
         }
-        if &el == "ORE" {
-            let ore = self.remaining.entry(String::from("ORE")).or_insert(0);
-            *ore += nb - *ore;
-            let used = self.used.entry(String::from("ORE")).or_insert(0);
-            *used += nb - *ore;
-            return;
-        }
-        let (generated, need) = self.relation.get(&el).unwrap().clone();
+
+        let mut total_cost = 0.;
+        let (generated, need) = self.relation.get(s).unwrap().clone();
         for el in need {
-            self.generate(el.0, el.1.clone());
-            let need = self.remaining.entry(el.1.clone()).or_insert(0);
-            *need -= el.0;
-            let used = self.used.entry(el.1).or_insert(0);
-            *used += el.0;
+            total_cost += self.cost(&el.1) * el.0 as f64;
         }
-        let have = self.remaining.get_mut(&el).unwrap();
-        *have += generated;
-        if nb > *have {
-            self.generate(nb, el);
-        }
+        total_cost / generated as f64
+    }
+
+    pub fn set(&mut self, s: &str, nb: u64) {
+        *self.remaining.entry(s.to_string()).or_insert(0) = nb
     }
 
     pub fn used(&self, s: &str) -> u64 {
         *self.used.get(s).unwrap_or(&0)
+    }
+
+    pub fn have(&self, s: &str) -> u64 {
+        *self.remaining.get(s).unwrap_or(&0)
     }
 }
 
@@ -96,11 +92,14 @@ impl std::str::FromStr for Reaction {
 
             relation.insert(el, (nb, need));
         }
+        let mut cost = HashMap::new();
+        cost.insert(String::from("ORE"), 1.);
 
         Ok(Reaction {
             relation,
             remaining: HashMap::new(),
             used: HashMap::new(),
+            cost,
         })
     }
 }
