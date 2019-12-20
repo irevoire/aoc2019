@@ -34,9 +34,27 @@ impl VmCom {
         self.write(c as u8 as i64)
     }
 
+    /// send a line to the intcode program your line should be finished by a newline `\n`
+    /// return true if the Vm is finished
+    pub fn puts(&mut self, s: &str) -> bool {
+        s.chars().any(|c| self.putc(c))
+    }
+
     /// return None if the Vm is finished
     pub fn read(&mut self) -> Option<i64> {
         self.reader.recv().ok()
+    }
+
+    /// return an empty line if there is nothing to read
+    pub fn read_line(&mut self) -> String {
+        let mut s = String::new();
+        while let Some(c) = self.getc() {
+            s.push(c);
+            if c == '\n' {
+                break;
+            }
+        }
+        s
     }
 
     /// read a char from intcode
