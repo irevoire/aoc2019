@@ -1,5 +1,4 @@
-use day9::*;
-use std::sync::mpsc::channel;
+use intcode::*;
 
 fn main() {
     let filename = std::env::args()
@@ -7,17 +6,9 @@ fn main() {
         .next()
         .expect("give me the path to your program");
 
-    let tape = parse(&filename);
-    let (_, vm_reader) = channel();
-    let (vm_writer, reader) = channel();
-    std::thread::spawn(move || {
-        let mut vm = Vm::from(tape, vm_reader, vm_writer);
-        while !vm.finished() {
-            vm.cycle();
-        }
-    });
+    let mut vm = run_from_file(&filename).unwrap();
 
-    for c in reader.iter() {
+    for c in vm.read_iter() {
         print!("{}", c as u8 as char);
     }
 }

@@ -1,5 +1,4 @@
-use day9::*;
-use std::sync::mpsc::channel;
+use intcode::*;
 
 fn main() {
     let filename = std::env::args()
@@ -7,18 +6,11 @@ fn main() {
         .next()
         .expect("give me the path to your program");
 
-    let tape = parse(&filename);
-    let (_, vm_reader) = channel();
-    let (vm_writer, reader) = channel();
-    std::thread::spawn(move || {
-        let mut vm = Vm::from(tape, vm_reader, vm_writer);
-        while !vm.finished() {
-            vm.cycle();
-        }
-    });
+    let mut vm = run_from_file(&filename).unwrap();
+
     let mut map = vec![Vec::new()];
 
-    for c in reader.iter() {
+    for c in vm.read_iter() {
         let c = c as u8 as char;
         if c == '\n' {
             map.push(Vec::new());
@@ -28,13 +20,6 @@ fn main() {
     }
     map.pop(); // last elem is empty
     map.pop(); // two last elem are empty
-
-    for line in map.iter() {
-        for c in line {
-            print!("{}", c);
-        }
-        println!();
-    }
 
     let mut res = 0;
 
@@ -50,6 +35,13 @@ fn main() {
                 res += x * y;
             }
         }
+    }
+
+    for line in map.iter() {
+        for c in line {
+            print!("{}", c);
+        }
+        println!();
     }
 
     println!("res is {}", res);
