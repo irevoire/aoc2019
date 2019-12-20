@@ -2,7 +2,6 @@ pub mod deplacement;
 mod grid;
 
 pub use deplacement::{Coord, Direction};
-use std::sync::mpsc::{channel, Receiver, Sender};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
@@ -34,49 +33,39 @@ pub struct Bot {
     direction: Direction,
     position: Coord,
     pub map: grid::Grid,
-    reader: Receiver<i64>,
-    writer: Sender<i64>,
+    brain: intcode::VmCom,
 }
 
 impl Bot {
-    pub fn from(from: &str) -> Self {
-        let tape = day9::parse(from);
-        let (writer, vm_reader) = channel();
-        let (vm_writer, reader) = channel();
-        std::thread::spawn(move || {
-            let mut brain = day9::Vm::from(tape, vm_reader, vm_writer);
-            while !brain.finished() {
-                brain.cycle();
-            }
-        });
-
+    pub fn from(file: &str) -> Self {
         Bot {
             finished: false,
             direction: Direction::Up,
             position: Coord::new(),
             map: grid::Grid::new(),
-            reader,
-            writer,
+            brain: intcode::run_from_file(file).unwrap(),
         }
     }
 
     pub fn cycle(&mut self) {
         let color = self.map[self.position];
-        if let Err(_) = self.writer.send(color.into()) {
+        if self.brain.write(color.into()) {
             self.finished = true;
             return;
         }
-        if let Ok(color) = self.reader.recv() {
-            self.map[self.position] = color.into();
-        } else {
-            self.finished = true;
-            return;
+        match self.brain.read() {
+            Some(color) => self.map[self.position] = color.into(),
+            _ => {
+                self.finished = true;
+                return;
+            }
         }
-        if let Ok(direction) = self.reader.recv() {
-            self.direction += direction.into();
-        } else {
-            self.finished = true;
-            return;
+        match self.brain.read() {
+            Some(direction) => self.direction += direction.into(),
+            _ => {
+                self.finished = true;
+                return;
+            }
         }
 
         self.position += self.direction;

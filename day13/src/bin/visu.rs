@@ -1,6 +1,5 @@
-use day9::*;
+use intcode::*;
 use std::io::{stdout, Write};
-use std::sync::mpsc::channel;
 use termion::screen::AlternateScreen;
 
 fn main() {
@@ -9,16 +8,9 @@ fn main() {
         .next()
         .expect("give me the path to your program"); // Skiping the name of the binary
 
-    let mut tape = parse(&filename);
+    let mut tape = tape_from_file(&filename).unwrap();
     tape[0] = 2; // insert quarters into the machine
-    let (writer, vm_reader) = channel();
-    let (vm_writer, reader) = channel();
-    std::thread::spawn(move || {
-        let mut vm = Vm::from(tape, vm_reader, vm_writer);
-        while !vm.finished() {
-            vm.cycle();
-        }
-    });
+    let mut vm = run_from_tape(tape);
 
     let mut scores = 0;
     {
@@ -28,13 +20,12 @@ fn main() {
         let mut ball;
         let mut paddle = 0;
         loop {
-            let x = reader.recv();
-            if x.is_err() {
-                break;
-            }
-            let x = x.unwrap();
-            let y = reader.recv().unwrap();
-            let id = reader.recv().unwrap();
+            let x = match vm.read() {
+                Some(x) => x,
+                None => break,
+            };
+            let y = vm.read().unwrap();
+            let id = vm.read().unwrap();
             if x == -1 && y == 0 {
                 scores = id;
                 write!(screen, "{}score: {}\n", termion::cursor::Goto(30, 20), id).unwrap();
@@ -53,11 +44,11 @@ fn main() {
                     4 => {
                         ball = x;
                         if paddle < ball {
-                            writer.send(1).unwrap();
+                            vm.write(1);
                         } else if paddle > ball {
-                            writer.send(-1).unwrap();
+                            vm.write(-1);
                         } else {
-                            writer.send(0).unwrap();
+                            vm.write(0);
                         }
                         std::thread::sleep(std::time::Duration::from_millis(15));
                         'o'

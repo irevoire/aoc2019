@@ -1,6 +1,5 @@
-use day9::*;
+use intcode::*;
 use std::io::{stdin, stdout, Write};
-use std::sync::mpsc::channel;
 use termion::event::{Event, Key};
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -12,16 +11,10 @@ fn main() {
         .next()
         .expect("give me the path to your program"); // Skiping the name of the binary
 
-    let mut tape = parse(&filename);
+    let mut tape = tape_from_file(&filename).unwrap();
     tape[0] = 2; // insert quarters into the machine
-    let (writer, vm_reader) = channel();
-    let (vm_writer, reader) = channel();
-    std::thread::spawn(move || {
-        let mut vm = Vm::from(tape, vm_reader, vm_writer);
-        while !vm.finished() {
-            vm.cycle();
-        }
-    });
+    let (reader, writer, _vm) = run_from_tape(tape).explode();
+
     std::thread::spawn(move || {
         let stdin = stdin();
         for c in stdin.events() {

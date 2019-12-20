@@ -1,5 +1,4 @@
-use day9::*;
-use std::sync::mpsc::channel;
+use intcode::*;
 
 fn main() {
     let filename = std::env::args()
@@ -7,28 +6,21 @@ fn main() {
         .next()
         .expect("give me the path to your program"); // Skiping the name of the binary
 
-    let mut tape = parse(&filename);
+    let mut tape = tape_from_file(&filename).unwrap();
     tape[0] = 2; // insert quarters into the machine
-    let (writer, vm_reader) = channel();
-    let (vm_writer, reader) = channel();
-    std::thread::spawn(move || {
-        let mut vm = Vm::from(tape, vm_reader, vm_writer);
-        while !vm.finished() {
-            vm.cycle();
-        }
-    });
+    let mut vm = run_from_tape(tape);
 
     let mut score = 0;
     let mut ball;
     let mut paddle = 0;
     loop {
-        let x = reader.recv();
-        if x.is_err() {
-            break;
-        }
-        let x = x.unwrap();
-        let y = reader.recv().unwrap();
-        let id = reader.recv().unwrap();
+        let x = match vm.read() {
+            None => break,
+            Some(x) => x,
+        };
+        let y = vm.read().unwrap();
+        let id = vm.read().unwrap();
+
         if x == -1 && y == 0 {
             score = id;
         } else {
@@ -39,11 +31,11 @@ fn main() {
                 4 => {
                     ball = x;
                     if paddle < ball {
-                        writer.send(1).unwrap();
+                        vm.write(1);
                     } else if paddle > ball {
-                        writer.send(-1).unwrap();
+                        vm.write(-1);
                     } else {
-                        writer.send(0).unwrap();
+                        vm.write(0);
                     }
                 }
                 _ => (),
