@@ -10,8 +10,7 @@ fn main() {
 
     let mut map = vec![Vec::new()];
 
-    for c in vm.read_iter() {
-        let c = c as u8 as char;
+    for c in vm.getc_iter() {
         if c == '\n' {
             map.push(Vec::new());
         } else {

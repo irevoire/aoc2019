@@ -8,7 +8,7 @@ fn main() {
 
     let mut vm = run_from_file(&filename).unwrap();
 
-    for c in vm.read_iter() {
-        print!("{}", c as u8 as char);
+    for c in vm.getc_iter() {
+        print!("{}", c);
     }
 }
