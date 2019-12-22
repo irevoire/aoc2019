@@ -34,10 +34,16 @@ impl VmCom {
         self.write(c as u8 as i64)
     }
 
-    /// send a line to the intcode program your line should be finished by a newline `\n`
+    /// send a string
     /// return true if the Vm is finished
     pub fn puts(&mut self, s: &str) -> bool {
         s.chars().any(|c| self.putc(c))
+    }
+
+    /// send a line to the intcode program
+    /// return true if the Vm is finished
+    pub fn putl(&mut self, s: &str) -> bool {
+        s.chars().chain("\n".chars()).any(|c| self.putc(c))
     }
 
     /// return None if the Vm is finished
