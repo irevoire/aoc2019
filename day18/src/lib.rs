@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Cell {
     Entrance,
     Empty,
@@ -40,7 +40,7 @@ pub fn parse(s: &str) -> Grid {
         .collect()
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Coord {
     pub x: usize,
     pub y: usize,
