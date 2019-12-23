@@ -1,4 +1,4 @@
-use std::sync::mpsc::{Iter, Receiver, Sender};
+use crossbeam_channel::{Iter, Receiver, Sender};
 use std::thread::JoinHandle;
 
 pub struct VmCom {

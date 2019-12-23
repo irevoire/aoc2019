@@ -1,4 +1,4 @@
-use std::sync::mpsc::{channel, Receiver, Sender};
+use crossbeam_channel::{unbounded, Receiver, Sender};
 
 pub enum Mode {
     Position,
@@ -30,8 +30,8 @@ impl Vm {
     }
 
     pub fn run_from(tape: crate::Tape) -> crate::VmCom {
-        let (writer, vm_reader) = channel();
-        let (vm_writer, reader) = channel();
+        let (writer, vm_reader) = unbounded();
+        let (vm_writer, reader) = unbounded();
         let vm = Vm::from(tape, vm_reader, vm_writer);
         let vm = vm.run();
         crate::VmCom::new(reader, writer, vm)
