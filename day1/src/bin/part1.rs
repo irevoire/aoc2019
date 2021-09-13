@@ -1,13 +1,7 @@
-use std::io;
-use std::io::prelude::*;
-
 fn main() {
-    let stdin = io::stdin();
-    let requirement: i32 = stdin
-        .lock()
-        .lines()
-        .map(|l| l.unwrap().parse::<i32>().unwrap())
+    let requirement: i32 = aoc::parser::lines_from_args_as::<i32>(1)
         .map(|i| i / 3 - 2)
         .sum();
     println!("{}", requirement);
 }
+
