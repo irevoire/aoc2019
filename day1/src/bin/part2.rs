@@ -8,7 +8,7 @@ fn fuel_computation(mut i: usize) -> usize {
 }
 
 fn main() {
-    let requirement: usize = aoc::parser::lines_from_args_as::<usize>(1)
+    let requirement: usize = aoc::parser::lines::<usize>()
         .map(fuel_computation)
         .sum();
     println!("{}", requirement);

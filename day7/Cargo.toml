@@ -8,3 +8,4 @@ edition = "2021"
 
 [dependencies]
 itertools = "0.8.2"
+aoc = { git = "https://github.com/irevoire/aoc" }

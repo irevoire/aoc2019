@@ -8,3 +8,4 @@ edition = "2021"
 
 [dependencies]
 rayon = "*"
+aoc = { git = "https://github.com/irevoire/aoc" }

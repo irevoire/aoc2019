@@ -143,7 +143,7 @@ impl Vm {
             *a = res;
             self.pos += 4;
         } else {
-            println!("an overflow was encountered");
+            eprintln!("an overflow was encountered");
             self.mem[self.pos] = 99;
         }
     }
@@ -158,7 +158,7 @@ impl Vm {
             *a = res;
             self.pos += 4;
         } else {
-            println!("an overflow was encountered");
+            eprintln!("an overflow was encountered");
             self.mem[self.pos] = 99;
         }
     }
