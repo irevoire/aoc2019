@@ -12,9 +12,9 @@ fn main() {
 
     println!("digraph G {{");
     println!("\trankdir=\"LR\"");
-    println!("\t\"gCOM\" [style=filled, fillcolor=blue]");
-    println!("\t\"gYOU\" [style=filled, fillcolor=green]");
-    println!("\t\"gSAN\" [style=filled, fillcolor=red]");
+    println!("\t\"gCOM\" [color=cyan]");
+    println!("\t\"gYOU\" [color=green]");
+    println!("\t\"gSAN\" [color=red]");
 
     let mut tree = day6::Tree::new();
     reader.lines().for_each(|l| {
